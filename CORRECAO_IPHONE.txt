@@ -1,0 +1,17 @@
+CONTROLE DO LAR - CORRECAO PARA IPHONE
+
+O que mudou:
+- Service worker v3 usa rede primeiro para HTML/CSS/JS e apaga caches antigos ao atualizar.
+- Cabeçalho usa duas colunas em celulares, com seletor de mes abaixo dos controles.
+- Protecoes adicionais contra elementos largos expandirem a pagina.
+
+COMO PUBLICAR:
+1. Extraia o ZIP. Copie o conteudo para a pasta do repositorio clonado (sem apagar .git).
+2. No GitHub Desktop, Commit to main e Push origin.
+3. Espere a nova compilacao do Cloudflare Pages aparecer como SUCESSO, com novo commit.
+4. No Safari, abra o site em uma nova aba privada para testar sem dados em cache.
+5. Se ainda tiver um atalho antigo instalado na tela inicial, abra o site pelo Safari e teste a nova versao antes de reinstalar o atalho.
+6. Se o Safari estiver configurado para solicitar site para computador, desative essa opcao para este site.
+
+Nao inclua .env.local ou credenciais secretas no GitHub. As variaveis publicas do Supabase continuam no Cloudflare.
+Nao execute novamente SQL. Confirme login e acesso aos dados antes de divulgar.

@@ -64,8 +64,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         ? 'bg-zinc-950/95 border-zinc-800 text-zinc-100' 
         : 'bg-white/95 border-slate-200 text-slate-900'
     }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap items-center justify-between min-h-16 gap-2 py-2 sm:flex-nowrap sm:py-0">
+      <div className="max-w-7xl mx-auto w-full min-w-0 px-3 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-[1fr_auto] sm:flex sm:items-center sm:justify-between min-h-16 gap-2 py-2 sm:py-0">
           {/* Mobills Style Brand Logo */}
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-teal-500 via-emerald-500 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-teal-500/25">
@@ -89,7 +89,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Center Month Switcher with Mobills Arrows */}
-          <div className={`order-3 w-full sm:w-auto sm:order-none flex items-center justify-center gap-1.5 p-1 rounded-2xl border text-xs font-bold ${
+          <div className={`col-span-2 sm:order-none sm:w-auto flex items-center justify-center gap-1.5 p-1 rounded-2xl border text-xs font-bold ${
             isBlack ? 'bg-zinc-900 border-zinc-800' : 'bg-slate-100 border-slate-200'
           }`}>
             <button
@@ -118,7 +118,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Quick Actions Right */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-end gap-1 sm:gap-2 min-w-0">
             {/* Privacy Eye Toggle */}
             {onToggleHideValues && (
               <button

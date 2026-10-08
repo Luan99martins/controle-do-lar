@@ -1,24 +1,28 @@
-const CACHE = 'controle-lar-v1';
+// Controle do Lar: atualizacoes priorizam a rede para nao manter interface antiga no iPhone.
+const CACHE = 'controle-lar-mobile-v3';
+const OFFLINE = ['/', '/manifest.webmanifest', '/icon-192.png'];
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(['/','/manifest.webmanifest','/icon-192.png'])));
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(OFFLINE)));
   self.skipWaiting();
 });
 self.addEventListener('activate', event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))));
-  self.clients.claim();
+  event.waitUntil(Promise.all([
+    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))),
+    self.clients.claim()
+  ]));
 });
 self.addEventListener('fetch', event => {
-  const req = event.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
-  if (req.mode === 'navigate') {
-    event.respondWith(fetch(req).then(res => {
-      if(res.ok) { const copy=res.clone(); caches.open(CACHE).then(c=>c.put(req,copy)); }
-      return res;
-    }).catch(() => caches.match(req).then(hit=>hit || caches.match('/'))));
-  } else {
-    event.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
-      if(res.ok) { const copy=res.clone(); caches.open(CACHE).then(c=>c.put(req,copy)); }
-      return res;
-    })));
-  }
+  const request = event.request;
+  const url = new URL(request.url);
+  if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+  // Navegacao, CSS e JavaScript atualizados sempre que houver internet.
+  event.respondWith(
+    fetch(request).then(response => {
+      if (response.ok && response.type === 'basic') {
+        const copy = response.clone();
+        event.waitUntil(caches.open(CACHE).then(cache => cache.put(request, copy)));
+      }
+      return response;
+    }).catch(async () => (await caches.match(request)) || (request.mode === 'navigate' ? await caches.match('/') : Response.error()))
+  );
 });
