@@ -191,6 +191,15 @@ function HouseholdBudgetAppContent({ userId }: { userId: string }) {
     return computePeriodStats(filteredTransactions);
   }, [filteredTransactions]);
 
+  // Saldo transportado: todas as receitas e despesas até o último dia do mês
+  // selecionado. Não altera os indicadores nem os relatórios de cada período.
+  const accumulatedBalance = useMemo(() => {
+    return transactions.reduce((balance, transaction) => {
+      if (!transaction.date || transaction.date.slice(0, 7) > currentMonthYear) return balance;
+      return balance + (transaction.type === 'income' ? transaction.amount : -transaction.amount);
+    }, 0);
+  }, [transactions, currentMonthYear]);
+
   const availableDays = useMemo(() => {
     const dates = transactions
       .filter(t => t.date.startsWith(currentMonthYear))
@@ -569,7 +578,7 @@ function HouseholdBudgetAppContent({ userId }: { userId: string }) {
           <div className="space-y-6 animate-in fade-in duration-200">
             {/* Mobills Hero Balance Card */}
             <MobillsHeroBalance
-              stats={periodStats}
+              stats={{ ...periodStats, balance: accumulatedBalance }}
               recurringBills={recurringBills}
               currentMonthYear={currentMonthYear}
               hideValues={hideValues}

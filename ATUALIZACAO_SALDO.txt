@@ -1,0 +1,16 @@
+CONTROLE DO LAR — SALDO ACUMULADO
+
+Alterações:
+- O cartão "Saldo Acumulado da Casa" soma receitas menos despesas registradas até o mês selecionado, inclusive meses anteriores e anos anteriores.
+- Receitas, despesas, categorias, gráficos e relatórios permanecem referentes ao período selecionado.
+- Ao consultar um mês anterior, não são incluídas transações de meses posteriores.
+- Não é necessário executar SQL nem alterar o Supabase.
+
+INSTALAÇÃO:
+1. Faça backup da pasta do repositório no computador.
+2. Copie os arquivos deste ZIP para a pasta do GitHub Desktop, substituindo os existentes, sem apagar .git.
+3. Faça Commit e Push origin.
+4. Confirme a nova implantação no Cloudflare Pages.
+5. Teste com uma receita em um mês, uma despesa no mês seguinte e veja o saldo transportado.
+
+Observação: o saldo reflete transações efetivamente cadastradas. Não é criado um lançamento de abertura automático.

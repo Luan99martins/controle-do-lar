@@ -69,7 +69,7 @@ export const MobillsHeroBalance: React.FC<MobillsHeroBalanceProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <span className={`text-xs font-bold uppercase tracking-wider ${isBlack ? 'text-zinc-400' : 'text-slate-500'}`}>
-                Saldo Atual da Casa
+                Saldo Acumulado da Casa
               </span>
               <button
                 onClick={onToggleHideValues}
