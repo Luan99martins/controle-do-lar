@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { supabase } from '@/lib/supabase';
+import { AuthGate } from '@/components/AuthGate';
 import { 
   Navbar 
 } from '@/components/Navbar';
@@ -66,121 +68,36 @@ import {
   getMonthName 
 } from '@/lib/financialUtils';
 import { ThemeProvider, useTheme } from '@/lib/ThemeContext';
-import { Plus, ArrowDownLeft, ArrowUpRight, CreditCard as CreditCardIcon } from 'lucide-react';
+import { Plus, ArrowDownLeft, ArrowUpRight, CreditCard as CreditCardIcon, Download, Upload } from 'lucide-react';
 
-const STORAGE_KEYS = {
-  TRANSACTIONS: 'controle_lar_transactions_v2',
-  MEMBERS: 'controle_lar_members_v2',
-  RECURRING_BILLS: 'controle_lar_recurring_bills_v2',
-  SAVINGS_GOALS: 'controle_lar_savings_goals_v2',
-  PRIVACY: 'controle_lar_privacy_v2',
-  CARDS: 'controle_lar_cards_v2',
-  CATEGORIES: 'controle_lar_categories_v2',
-};
 
-function HouseholdBudgetAppContent() {
+function HouseholdBudgetAppContent({ userId }: { userId: string }) {
+  const [cloudReady, setCloudReady] = useState(false);
+  const [cloudError, setCloudError] = useState('');
+  const [saveState, setSaveState] = useState('');
+  const didLoad = useRef(false);
   const { isBlack } = useTheme();
 
   // Navigation tab
   const [activeTab, setActiveTab] = useState<MobillsTab>('overview');
 
   // Privacy toggle (Eye)
-  const [hideValues, setHideValues] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem(STORAGE_KEYS.PRIVACY);
-        if (stored !== null) return JSON.parse(stored);
-      } catch {
-        // ignore
-      }
-    }
-    return false;
-  });
+  const [hideValues, setHideValues] = useState(false);
 
-  const toggleHideValues = () => {
-    setHideValues(prev => {
-      const next = !prev;
-      try {
-        localStorage.setItem(STORAGE_KEYS.PRIVACY, JSON.stringify(next));
-      } catch {
-        // ignore
-      }
-      return next;
-    });
-  };
+  const toggleHideValues = () => setHideValues(prev => !prev);
 
   // Persistence state with safe lazy initialization
-  const [members, setMembers] = useState<HouseMember[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem(STORAGE_KEYS.MEMBERS);
-        if (stored) return JSON.parse(stored);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return INITIAL_MEMBERS;
-  });
+  const [members, setMembers] = useState<HouseMember[]>([]);
 
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
-        if (stored) return JSON.parse(stored);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return INITIAL_TRANSACTIONS;
-  });
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  const [recurringBills, setRecurringBills] = useState<RecurringBill[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem(STORAGE_KEYS.RECURRING_BILLS);
-        if (stored) return JSON.parse(stored);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return INITIAL_RECURRING_BILLS;
-  });
+  const [recurringBills, setRecurringBills] = useState<RecurringBill[]>([]);
 
-  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem(STORAGE_KEYS.SAVINGS_GOALS);
-        if (stored) return JSON.parse(stored);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return INITIAL_SAVINGS_GOALS;
-  });
+  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
 
-  const [creditCards, setCreditCards] = useState<CreditCard[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem(STORAGE_KEYS.CARDS);
-        if (stored) return JSON.parse(stored);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return INITIAL_CREDIT_CARDS;
-  });
+  const [creditCards, setCreditCards] = useState<CreditCard[]>([]);
 
-  const [categories, setCategories] = useState<CategoryItem[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
-        if (stored) return JSON.parse(stored);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return INITIAL_CATEGORIES;
-  });
+  const [categories, setCategories] = useState<CategoryItem[]>(INITIAL_CATEGORIES);
 
   // Time & Filter state
   const [selectedYear, setSelectedYear] = useState<number>(2026);
@@ -199,20 +116,47 @@ function HouseholdBudgetAppContent() {
   const [viewingReceiptTx, setViewingReceiptTx] = useState<Transaction | null>(null);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
-  // Save to LocalStorage on updates
+  // Cada conta tem um documento próprio, protegido por RLS no Supabase.
+  // Nunca carregar dados do localStorage de outra pessoa.
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify(members));
-      localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions));
-      localStorage.setItem(STORAGE_KEYS.RECURRING_BILLS, JSON.stringify(recurringBills));
-      localStorage.setItem(STORAGE_KEYS.SAVINGS_GOALS, JSON.stringify(savingsGoals));
-      localStorage.setItem(STORAGE_KEYS.CARDS, JSON.stringify(creditCards));
-      localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
-    } catch (e) {
-      console.error('Falha ao salvar localStorage:', e);
+    let cancelled = false;
+    didLoad.current = false;
+    setCloudReady(false);
+    async function load() {
+      const { data, error } = await supabase.from('dados_financeiros')
+        .select('dados').eq('usuario_id', userId).maybeSingle();
+      if (cancelled) return;
+      if (error) { setCloudError('Falha ao carregar seus dados: ' + error.message); return; }
+      const d = data?.dados as Record<string, unknown> | undefined;
+      if (d) {
+        if (Array.isArray(d.members)) setMembers(d.members as HouseMember[]);
+        if (Array.isArray(d.transactions)) setTransactions(d.transactions as Transaction[]);
+        if (Array.isArray(d.recurringBills)) setRecurringBills(d.recurringBills as RecurringBill[]);
+        if (Array.isArray(d.savingsGoals)) setSavingsGoals(d.savingsGoals as SavingsGoal[]);
+        if (Array.isArray(d.creditCards)) setCreditCards(d.creditCards as CreditCard[]);
+        if (Array.isArray(d.categories)) setCategories(d.categories as CategoryItem[]);
+      }
+      // Defer enabling persistence until React commits the loaded state.
+      didLoad.current = true;
+      setCloudReady(true);
     }
-  }, [members, transactions, recurringBills, savingsGoals, creditCards, categories]);
+    void load();
+    return () => { cancelled = true; didLoad.current = false; };
+  }, [userId]);
+
+  useEffect(() => {
+    if (!cloudReady || !didLoad.current) return;
+    setSaveState('Salvando...');
+    const timer = setTimeout(async () => {
+      const dados = { members, transactions, recurringBills, savingsGoals, creditCards, categories };
+      const { error } = await supabase.from('dados_financeiros').upsert(
+        { usuario_id: userId, dados, atualizado_em: new Date().toISOString() },
+        { onConflict: 'usuario_id' }
+      );
+      setSaveState(error ? 'Erro ao salvar: ' + error.message : 'Salvo na nuvem');
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [cloudReady, userId, members, transactions, recurringBills, savingsGoals, creditCards, categories]);
 
   // Current formatted month string (e.g. "2026-10")
   const currentMonthYear = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}`;
@@ -521,28 +465,64 @@ function HouseholdBudgetAppContent() {
     });
   };
 
+  // Backup local: essencial porque dados do Safari podem ser apagados.
+  const handleBackupExport = () => {
+    const data = {
+      format: 'controle-do-lar-backup', version: 1,
+      exportedAt: new Date().toISOString(),
+      members, transactions, recurringBills, savingsGoals, creditCards, categories,
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `controle-do-lar-backup-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+  };
+
+  const handleBackupImport = async (file?: File) => {
+    if (!file) return;
+    try {
+      const backup = JSON.parse(await file.text());
+      const fields = ['members', 'transactions', 'recurringBills', 'savingsGoals', 'creditCards', 'categories'];
+      if (backup.format !== 'controle-do-lar-backup' || !fields.every(k => Array.isArray(backup[k]))) {
+        throw new Error('Arquivo incompatível');
+      }
+      if (!window.confirm('Restaurar este backup? Os dados atuais serão substituídos.')) return;
+      setMembers(backup.members);
+      setTransactions(backup.transactions);
+      setRecurringBills(backup.recurringBills);
+      setSavingsGoals(backup.savingsGoals);
+      setCreditCards(backup.creditCards);
+      setCategories(backup.categories);
+    } catch (error) {
+      alert('Não foi possível importar. Selecione um backup JSON exportado por este aplicativo.');
+    }
+  };
+
   // Reset to default sample data
   const handleResetData = () => {
-    setMembers(INITIAL_MEMBERS);
-    setTransactions(INITIAL_TRANSACTIONS);
-    setRecurringBills(INITIAL_RECURRING_BILLS);
-    setSavingsGoals(INITIAL_SAVINGS_GOALS);
-    setCreditCards(INITIAL_CREDIT_CARDS);
+    setMembers([]);
+    setTransactions([]);
+    setRecurringBills([]);
+    setSavingsGoals([]);
+    setCreditCards([]);
     setCategories(INITIAL_CATEGORIES);
-    localStorage.removeItem(STORAGE_KEYS.MEMBERS);
-    localStorage.removeItem(STORAGE_KEYS.TRANSACTIONS);
-    localStorage.removeItem(STORAGE_KEYS.RECURRING_BILLS);
-    localStorage.removeItem(STORAGE_KEYS.SAVINGS_GOALS);
-    localStorage.removeItem(STORAGE_KEYS.CARDS);
-    localStorage.removeItem(STORAGE_KEYS.CATEGORIES);
   };
 
   const pendingBills = recurringBills.filter(b => b.lastPaidMonthYear !== currentMonthYear);
+  if (cloudError) return <div className="min-h-screen p-8 text-red-700 bg-red-50"><h2 className="font-bold">Não foi possível abrir sua conta</h2><p>{cloudError}</p><button className="mt-4 underline" onClick={() => location.reload()}>Tentar novamente</button></div>;
+  if (!cloudReady) return <div className="min-h-screen flex items-center justify-center">Carregando seus dados financeiros...</div>;
+
 
   return (
     <div className={`min-h-screen flex flex-col font-sans transition-colors duration-200 ${
       isBlack ? 'bg-zinc-950 text-zinc-100' : 'bg-slate-50/80 text-slate-900'
     }`}>
+      <div className="bg-emerald-700 text-white text-xs flex justify-between px-3 py-2 gap-2"><span>{saveState || 'Conectado à sua conta'}</span><button onClick={() => void supabase.auth.signOut()} className="underline font-semibold">Sair da conta</button></div>
       {/* Top Navigation */}
       <Navbar
         selectedYear={selectedYear}
@@ -562,6 +542,16 @@ function HouseholdBudgetAppContent() {
         hideValues={hideValues}
         onToggleHideValues={toggleHideValues}
       />
+
+      <section className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-3">
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-slate-500 dark:text-slate-400">Dados salvos neste iPhone. Faça backup regularmente.</span>
+          <button onClick={handleBackupExport} className="inline-flex items-center gap-1 rounded-lg bg-emerald-700 px-3 py-2 text-white font-semibold" type="button"><Download size={15}/> Exportar backup</button>
+          <label className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-800 font-semibold"><Upload size={15}/> Importar backup
+            <input type="file" accept=".json,application/json" className="hidden" onChange={e => { void handleBackupImport(e.target.files?.[0]); e.target.value = ''; }}/>
+          </label>
+        </div>
+      </section>
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
@@ -854,7 +844,7 @@ function HouseholdBudgetAppContent() {
 export default function HouseholdBudgetApp() {
   return (
     <ThemeProvider>
-      <HouseholdBudgetAppContent />
+      <AuthGate>{(userId) => <HouseholdBudgetAppContent key={userId} userId={userId} />}</AuthGate>
     </ThemeProvider>
   );
 }
