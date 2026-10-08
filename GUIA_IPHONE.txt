@@ -1,0 +1,17 @@
+CONTROLE DO LAR — VERSÃO PARA IPHONE (PWA)
+
+1. Este ZIP é o projeto-fonte. Ele NÃO instala diretamente no iPhone.
+2. Hospede o conteúdo gerado pelo build (pasta out/) em um endereço HTTPS.
+   Exemplo: Cloudflare Pages, respeitando as condições do plano gratuito.
+3. Para gerar a pasta out: instale Node.js, execute npm install e npm run build.
+4. No Safari do iPhone, acesse a URL publicada.
+5. Toque em Compartilhar > Adicionar à Tela de Início > Adicionar.
+6. Faça backups frequentes em 'Exportar backup' e salve-os em Arquivos/iCloud Drive.
+7. Para recuperar: 'Importar backup', selecione o JSON e confirme.
+
+ATENÇÃO
+- Não há sincronização com PC nem nuvem nesta versão.
+- Apagar dados do Safari ou remover o app pode eliminar registros locais.
+- O offline depende de abrir o app online primeiro e armazenar seus recursos em cache.
+- Este é um controle financeiro doméstico, não um PDV de emissão fiscal.
+- O aplicativo não foi publicado: é necessário fazer deploy em HTTPS.

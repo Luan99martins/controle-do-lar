@@ -1,0 +1,13 @@
+CONTROLE DO LAR — LOGIN E DADOS POR USUÁRIO
+
+1) Execute supabase-setup.sql no SQL Editor do seu projeto Supabase.
+2) No Cloudflare Pages, configure antes do build: NEXT_PUBLIC_SUPABASE_URL=https://rwediboqcagaranfxlqh.supabase.co
+   e NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (copie do painel Supabase API Keys). NUNCA use a secret key.
+3) Envie este projeto ao GitHub preservando todas as pastas. O ideal é criar branch de teste e não substituir produção antes de validar.
+4) Cloudflare Pages: Next.js (Static HTML Export), npm run build, out; main.
+5) Faça cadastro de dois usuários de teste. Verifique leitura e escrita dos dados de cada um e recuperação de senha.
+6) Configure um SMTP apropriado antes de abrir cadastro ao público. O serviço de e-mail padrão do Supabase é limitado.
+7) Dados antigos locais NÃO são importados automaticamente (por segurança). Exporte um backup JSON no app antigo e importe após entrar na nova conta.
+8) O documento dados_financeiros guarda todas as funcionalidades originais juntas num JSON por usuário; alterações simultâneas em múltiplos dispositivos podem sobrescrever dados (última gravação vence). Recomendado migrar futuramente para tabelas separadas.
+9) Não há execução de testes de build garantida nesta entrega; valide a implantação no Cloudflare antes de substituir a produção.
+10) Dados financeiros e eventuais comprovantes não possuem criptografia de ponta a ponta; proteja o acesso Supabase, configure política de privacidade e evite disponibilizar publicamente antes de validar.
