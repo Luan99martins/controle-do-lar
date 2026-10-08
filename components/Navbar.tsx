@@ -10,17 +10,11 @@ import {
   Sun,
   Eye,
   EyeOff,
-  ChevronLeft,
-  ChevronRight
 } from 'lucide-react';
 import { HouseMember } from '@/lib/types';
 import { useTheme } from '@/lib/ThemeContext';
-import { getMonthName } from '@/lib/financialUtils';
 
 interface NavbarProps {
-  selectedYear: number;
-  selectedMonth: number;
-  onMonthChange: (year: number, month: number) => void;
   onOpenNewTransaction: () => void;
   onOpenMembersModal: () => void;
   onExportPDF: () => void;
@@ -30,9 +24,6 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
-  selectedYear,
-  selectedMonth,
-  onMonthChange,
   onOpenNewTransaction,
   onOpenMembersModal,
   onExportPDF,
@@ -41,22 +32,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleHideValues,
 }) => {
   const { toggleTheme, isBlack } = useTheme();
-
-  const handlePrevMonth = () => {
-    if (selectedMonth === 1) {
-      onMonthChange(selectedYear - 1, 12);
-    } else {
-      onMonthChange(selectedYear, selectedMonth - 1);
-    }
-  };
-
-  const handleNextMonth = () => {
-    if (selectedMonth === 12) {
-      onMonthChange(selectedYear + 1, 1);
-    } else {
-      onMonthChange(selectedYear, selectedMonth + 1);
-    }
-  };
 
   return (
     <header className={`sticky top-0 z-40 backdrop-blur-md border-b transition-colors ${
@@ -86,35 +61,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 Orçamento Doméstico & Finanças Coletivas
               </p>
             </div>
-          </div>
-
-          {/* Center Month Switcher with Mobills Arrows */}
-          <div className={`col-span-2 sm:order-none sm:w-auto flex items-center justify-center gap-1.5 p-1 rounded-2xl border text-xs font-bold ${
-            isBlack ? 'bg-zinc-900 border-zinc-800' : 'bg-slate-100 border-slate-200'
-          }`}>
-            <button
-              onClick={handlePrevMonth}
-              className={`p-1.5 rounded-xl transition-colors ${
-                isBlack ? 'text-zinc-400 hover:text-white hover:bg-zinc-800' : 'text-slate-600 hover:text-slate-900 hover:bg-white'
-              }`}
-              title="Mês anterior"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-
-            <span className={`px-2 py-0.5 ${isBlack ? 'text-teal-300' : 'text-teal-800 font-extrabold'}`}>
-              {getMonthName(selectedMonth)} de {selectedYear}
-            </span>
-
-            <button
-              onClick={handleNextMonth}
-              className={`p-1.5 rounded-xl transition-colors ${
-                isBlack ? 'text-zinc-400 hover:text-white hover:bg-zinc-800' : 'text-slate-600 hover:text-slate-900 hover:bg-white'
-              }`}
-              title="Próximo mês"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
           </div>
 
           {/* Quick Actions Right */}

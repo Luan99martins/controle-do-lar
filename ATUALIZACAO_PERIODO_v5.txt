@@ -1,0 +1,10 @@
+CONTROLE DO LAR - VERSÃO 5: FILTRO DE PERÍODO
+- Opções Hoje, 7 dias, Este mês, 30 dias, Este ano e Personalizado.
+- Filtro compacto, expansível no celular, sem seletor mensal no cabeçalho.
+- Receitas, despesas, gráficos, transações e PDF usam o intervalo selecionado.
+- Saldo acumulado considera todas as movimentações até a data final selecionada.
+- Contas fixas e faturas continuam com referência mensal, usando o mês da data final.
+- Não é necessário executar SQL novamente nem alterar as variáveis Supabase.
+- Após atualizar pelo GitHub Desktop, aguarde o Cloudflare Pages publicar.
+- Faça testes com datas atravessando diferentes meses e anos.
+ATENÇÃO: validação de compilação completa indisponível neste ambiente.

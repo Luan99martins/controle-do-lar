@@ -14,7 +14,7 @@ import {
   MobillsTab 
 } from '@/components/MobillsTabBar';
 import { 
-  PeriodFilterTabs, 
+  PeriodFilterTabs, intervalForMode, 
   ViewPeriodMode 
 } from '@/components/PeriodFilterTabs';
 import { 
@@ -64,8 +64,7 @@ import {
 } from '@/lib/constants';
 import { 
   computePeriodStats, 
-  generateHouseholdPDFReport, 
-  getMonthName 
+  generateHouseholdPDFReport 
 } from '@/lib/financialUtils';
 import { ThemeProvider, useTheme } from '@/lib/ThemeContext';
 import { Plus, ArrowDownLeft, ArrowUpRight, CreditCard as CreditCardIcon, Download, Upload } from 'lucide-react';
@@ -100,11 +99,8 @@ function HouseholdBudgetAppContent({ userId }: { userId: string }) {
   const [categories, setCategories] = useState<CategoryItem[]>(INITIAL_CATEGORIES);
 
   // Time & Filter state
-  const [selectedYear, setSelectedYear] = useState<number>(2026);
-  const [selectedMonth, setSelectedMonth] = useState<number>(10); // Outubro
   const [periodMode, setPeriodMode] = useState<ViewPeriodMode>('month');
-  const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
-  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [dateInterval, setDateInterval] = useState(() => intervalForMode('month'));
 
   // Modals state
   const [isTxModalOpen, setIsTxModalOpen] = useState(false);
@@ -158,54 +154,24 @@ function HouseholdBudgetAppContent({ userId }: { userId: string }) {
     return () => clearTimeout(timer);
   }, [cloudReady, userId, members, transactions, recurringBills, savingsGoals, creditCards, categories]);
 
-  // Current formatted month string (e.g. "2026-10")
-  const currentMonthYear = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}`;
-  const periodLabel = `${getMonthName(selectedMonth)} de ${selectedYear}`;
+  // O mês de referência é mantido internamente para contas fixas e faturas.
+  // O filtro exibido ao usuário pode abranger qualquer intervalo de datas.
+  const selectedPeriodEnd = dateInterval.end;
+  const selectedMonth = Number(selectedPeriodEnd.slice(5, 7));
+  const currentMonthYear = selectedPeriodEnd.slice(0, 7);
+  const periodLabel = `${dateInterval.start} a ${dateInterval.end}`;
 
-  // Filter transactions by selected year and month, and optionally week/day
-  const filteredTransactions = useMemo(() => {
-    return transactions.filter(t => {
-      if (!t.date.startsWith(currentMonthYear)) return false;
+  const filteredTransactions = useMemo(() => transactions.filter(t =>
+    Boolean(t.date && t.date >= dateInterval.start && t.date <= dateInterval.end)
+  ), [transactions, dateInterval.start, dateInterval.end]);
 
-      if (periodMode === 'day' && selectedDay) {
-        return t.date === selectedDay;
-      }
+  const periodStats = useMemo(() => computePeriodStats(filteredTransactions), [filteredTransactions]);
 
-      if (periodMode === 'week' && selectedWeek !== null) {
-        const day = parseInt(t.date.split('-')[2] || '1', 10);
-        let w = 1;
-        if (day <= 7) w = 1;
-        else if (day <= 14) w = 2;
-        else if (day <= 21) w = 3;
-        else if (day <= 28) w = 4;
-        else w = 5;
-
-        return w === selectedWeek;
-      }
-
-      return true;
-    });
-  }, [transactions, currentMonthYear, periodMode, selectedWeek, selectedDay]);
-
-  const periodStats = useMemo(() => {
-    return computePeriodStats(filteredTransactions);
-  }, [filteredTransactions]);
-
-  // Saldo transportado: todas as receitas e despesas até o último dia do mês
-  // selecionado. Não altera os indicadores nem os relatórios de cada período.
-  const accumulatedBalance = useMemo(() => {
-    return transactions.reduce((balance, transaction) => {
-      if (!transaction.date || transaction.date.slice(0, 7) > currentMonthYear) return balance;
-      return balance + (transaction.type === 'income' ? transaction.amount : -transaction.amount);
-    }, 0);
-  }, [transactions, currentMonthYear]);
-
-  const availableDays = useMemo(() => {
-    const dates = transactions
-      .filter(t => t.date.startsWith(currentMonthYear))
-      .map(t => t.date);
-    return Array.from(new Set(dates)).sort();
-  }, [transactions, currentMonthYear]);
+  // Considera todas as movimentações até o fim do período selecionado.
+  const accumulatedBalance = useMemo(() => transactions.reduce((balance, transaction) => {
+    if (!transaction.date || transaction.date > dateInterval.end) return balance;
+    return balance + (transaction.type === 'income' ? transaction.amount : -transaction.amount);
+  }, 0), [transactions, dateInterval.end]);
 
   // Handle adding or editing transaction
   const handleSaveTransaction = (data: Omit<Transaction, 'id' | 'createdAt'> & { id?: string }) => {
@@ -534,12 +500,6 @@ function HouseholdBudgetAppContent({ userId }: { userId: string }) {
       <div className="bg-emerald-700 text-white text-xs flex justify-between px-3 py-2 gap-2"><span>{saveState || 'Conectado à sua conta'}</span><button onClick={() => void supabase.auth.signOut()} className="underline font-semibold">Sair da conta</button></div>
       {/* Top Navigation */}
       <Navbar
-        selectedYear={selectedYear}
-        selectedMonth={selectedMonth}
-        onMonthChange={(y, m) => {
-          setSelectedYear(y);
-          setSelectedMonth(m);
-        }}
         onOpenNewTransaction={() => {
           setEditingTransaction(null);
           setTxModalDefaultType('expense');
@@ -593,11 +553,8 @@ function HouseholdBudgetAppContent({ userId }: { userId: string }) {
             <PeriodFilterTabs
               mode={periodMode}
               onModeChange={setPeriodMode}
-              selectedWeek={selectedWeek}
-              onSelectWeek={setSelectedWeek}
-              selectedDay={selectedDay}
-              onSelectDay={setSelectedDay}
-              availableDays={availableDays}
+              interval={dateInterval}
+              onIntervalChange={setDateInterval}
             />
 
             {/* Charts Section */}
@@ -671,11 +628,8 @@ function HouseholdBudgetAppContent({ userId }: { userId: string }) {
             <PeriodFilterTabs
               mode={periodMode}
               onModeChange={setPeriodMode}
-              selectedWeek={selectedWeek}
-              onSelectWeek={setSelectedWeek}
-              selectedDay={selectedDay}
-              onSelectDay={setSelectedDay}
-              availableDays={availableDays}
+              interval={dateInterval}
+              onIntervalChange={setDateInterval}
             />
 
             <TransactionList
@@ -807,7 +761,7 @@ function HouseholdBudgetAppContent({ userId }: { userId: string }) {
           categories={categories}
           creditCards={creditCards}
           initialData={editingTransaction}
-          defaultDate={selectedDay || `${currentMonthYear}-07`}
+          defaultDate={dateInterval.end}
           defaultType={txModalDefaultType}
           defaultPaymentMethod={txModalDefaultPaymentMethod}
           defaultCreditCardId={txModalDefaultCreditCardId}
