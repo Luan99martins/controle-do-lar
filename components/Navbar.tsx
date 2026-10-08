@@ -65,18 +65,18 @@ export const Navbar: React.FC<NavbarProps> = ({
         : 'bg-white/95 border-slate-200 text-slate-900'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-3">
+        <div className="flex flex-wrap items-center justify-between min-h-16 gap-2 py-2 sm:flex-nowrap sm:py-0">
           {/* Mobills Style Brand Logo */}
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-teal-500 via-emerald-500 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-teal-500/25">
               <Home className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className={`font-black text-lg tracking-tight ${isBlack ? 'text-white' : 'text-slate-900'}`}>
+              <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+                <span className={`font-black text-sm sm:text-lg tracking-tight ${isBlack ? 'text-white' : 'text-slate-900'}`}>
                   Controle do Lar
                 </span>
-                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                <span className={`hidden sm:inline-flex text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
                   isBlack ? 'bg-teal-950 text-teal-300 border border-teal-800/60' : 'bg-teal-50 text-teal-700 border border-teal-200'
                 }`}>
                   Mobills Edition
@@ -89,7 +89,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Center Month Switcher with Mobills Arrows */}
-          <div className={`flex items-center gap-1.5 p-1 rounded-2xl border text-xs font-bold ${
+          <div className={`order-3 w-full sm:w-auto sm:order-none flex items-center justify-center gap-1.5 p-1 rounded-2xl border text-xs font-bold ${
             isBlack ? 'bg-zinc-900 border-zinc-800' : 'bg-slate-100 border-slate-200'
           }`}>
             <button
@@ -188,7 +188,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* New Transaction Button Mobills Style */}
             <button
               onClick={onOpenNewTransaction}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 shadow-sm shadow-emerald-500/20 transition-all scale-100 hover:scale-102"
+              className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 shadow-sm shadow-emerald-500/20 transition-all scale-100 hover:scale-102"
             >
               <Plus className="w-4 h-4" />
               <span>Novo Gasto</span>

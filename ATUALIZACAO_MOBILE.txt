@@ -1,0 +1,18 @@
+CONTROLE DO LAR - ATUALIZAÇÃO PARA IPHONE
+
+1. Faça um backup da pasta local controle-do-lar no Windows.
+2. Descompacte este arquivo. Copie as pastas app e components, além de next.config.ts e demais arquivos, para a pasta do repositório clonada pelo GitHub Desktop.
+3. Não apague a pasta .git nem envie .env.local ou chaves secretas.
+4. No GitHub Desktop, confira as alterações; faça Commit e Push origin.
+5. Aguarde a implantação no Cloudflare Pages.
+6. No Safari do iPhone, atualize o site; se a versão antiga persistir, feche e reabra o PWA e limpe apenas o cache do site se necessário (cuidado com dados locais).
+
+AJUSTES
+- Viewport apropriado para o iPhone
+- Cabeçalho responsivo com mês em uma segunda linha no celular
+- Navegação fixa inferior com cinco abas no celular
+- Ação flutuante posicionada acima da navegação
+- Prevenção de largura excessiva e ajustes para formulários
+- Mensagem de sincronização coerente com Supabase
+
+Este projeto foi preparado para teste. Antes de divulgar, valide em iPhone real e com duas contas separadas.

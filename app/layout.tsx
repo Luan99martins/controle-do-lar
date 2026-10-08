@@ -1,6 +1,8 @@
-import type {Metadata} from 'next';
+import type {Metadata, Viewport} from 'next';
 import './globals.css';
 import { PWARegister } from '@/components/PWARegister'; // Global styles
+
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover' };
 
 export const metadata: Metadata = {
   manifest: '/manifest.webmanifest',

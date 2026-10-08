@@ -1,1 +1,16 @@
 @import "tailwindcss";
+
+/* Controle do Lar - mobile-first safe layout */
+html { width: 100%; overflow-x: clip; -webkit-text-size-adjust: 100%; }
+body { width: 100%; min-width: 0; overflow-x: clip; }
+*, *::before, *::after { box-sizing: border-box; }
+@media (max-width: 639px) {
+  main, main > div, main section, main article { min-width: 0; max-width: 100%; }
+  main .grid > * { min-width: 0; }
+  main .overflow-x-auto { -webkit-overflow-scrolling: touch; }
+  main input, main select, main textarea { max-width: 100%; font-size: 16px; }
+  main button { touch-action: manipulation; }
+  main .text-3xl { font-size: 1.65rem; }
+  main .text-4xl { font-size: 1.85rem; }
+  .recharts-responsive-container { max-width: 100%; }
+}

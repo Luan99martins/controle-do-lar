@@ -519,7 +519,7 @@ function HouseholdBudgetAppContent({ userId }: { userId: string }) {
 
 
   return (
-    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-200 ${
+    <div className={`min-h-screen w-full min-w-0 overflow-x-clip flex flex-col font-sans transition-colors duration-200 ${
       isBlack ? 'bg-zinc-950 text-zinc-100' : 'bg-slate-50/80 text-slate-900'
     }`}>
       <div className="bg-emerald-700 text-white text-xs flex justify-between px-3 py-2 gap-2"><span>{saveState || 'Conectado à sua conta'}</span><button onClick={() => void supabase.auth.signOut()} className="underline font-semibold">Sair da conta</button></div>
@@ -543,9 +543,9 @@ function HouseholdBudgetAppContent({ userId }: { userId: string }) {
         onToggleHideValues={toggleHideValues}
       />
 
-      <section className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-3">
+      <section className="max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-3">
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="text-slate-500 dark:text-slate-400">Dados salvos neste iPhone. Faça backup regularmente.</span>
+          <span className="text-slate-500 dark:text-slate-400">Dados sincronizados na sua conta. Exporte um backup quando desejar.</span>
           <button onClick={handleBackupExport} className="inline-flex items-center gap-1 rounded-lg bg-emerald-700 px-3 py-2 text-white font-semibold" type="button"><Download size={15}/> Exportar backup</button>
           <label className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-800 font-semibold"><Upload size={15}/> Importar backup
             <input type="file" accept=".json,application/json" className="hidden" onChange={e => { void handleBackupImport(e.target.files?.[0]); e.target.value = ''; }}/>
@@ -554,7 +554,7 @@ function HouseholdBudgetAppContent({ userId }: { userId: string }) {
       </section>
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <main className="flex-1 max-w-7xl w-full min-w-0 mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-28 sm:pb-6 space-y-5 sm:space-y-6">
         {/* Mobills Tab Navigation Bar */}
         <MobillsTabBar
           activeTab={activeTab}
@@ -764,7 +764,7 @@ function HouseholdBudgetAppContent({ userId }: { userId: string }) {
       </main>
 
       {/* Mobills Floating Action Button (FAB) */}
-      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2">
+      <div className="fixed bottom-24 right-4 sm:bottom-6 sm:right-6 z-40 flex flex-col items-end gap-2">
         <button
           onClick={() => handleOpenNewCardExpense()}
           className="flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs shadow-lg shadow-purple-900/30 transition-all hover:scale-105 active:scale-95 cursor-pointer"

@@ -61,7 +61,8 @@ export const MobillsTabBar: React.FC<MobillsTabBarProps> = ({
   ];
 
   return (
-    <div className={`p-1.5 rounded-2xl border shadow-2xs overflow-x-auto transition-colors ${
+    <>
+    <div className={`hidden sm:block p-1.5 rounded-2xl border shadow-2xs overflow-x-auto transition-colors ${
       isBlack ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-200/80'
     }`}>
       <div className="flex items-center gap-1 min-w-max">
@@ -98,5 +99,15 @@ export const MobillsTabBar: React.FC<MobillsTabBarProps> = ({
         })}
       </div>
     </div>
+    <nav aria-label="Navegação principal" className={`sm:hidden fixed bottom-0 inset-x-0 z-50 border-t shadow-lg ${isBlack ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-slate-200'}`} style={{paddingBottom: 'env(safe-area-inset-bottom, 0px)'}}>
+      <div className="grid grid-cols-5 gap-0.5 px-1 py-2">
+        {tabs.map(tab => (
+          <button key={tab.id} type="button" onClick={() => onTabChange(tab.id)} aria-current={activeTab === tab.id ? 'page' : undefined} className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-0.5 py-2 text-[10px] font-semibold ${activeTab === tab.id ? 'bg-emerald-50 text-emerald-700' : isBlack ? 'text-zinc-300' : 'text-slate-500'}`}>
+            {tab.icon}<span className="truncate max-w-full">{tab.id === 'overview' ? 'Início' : tab.id === 'transactions' ? 'Transações' : tab.id === 'fixed' ? 'Fixas' : tab.id === 'cards' ? 'Cartões' : 'Metas'}</span>
+          </button>
+        ))}
+      </div>
+    </nav>
+    </>
   );
 };
