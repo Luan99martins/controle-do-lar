@@ -1,0 +1,6 @@
+{
+  "name": "FinLar - Gestão Financeira Doméstica",
+  "description": "Controle financeiro compartilhado para casas e famílias com receitas, despesas por período (mês, semana, dia), divisão entre moradores, lembretes de contas recorrentes, metas de economia e exportação de relatórios em PDF com comprovantes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
